@@ -1,14 +1,10 @@
 name: pipeline
 
-# Library CI: cut a semver tag + GitHub Release on every code change to main
-# (changes limited to .github/ are ignored so CI edits never trigger a
-# release), then run the quality gate and build a container image.
-
 on:
   push:
     branches: [main]
     paths-ignore:
-      - .github/**
+      - '.github/**'
   workflow_dispatch:
 
 permissions:
@@ -23,7 +19,7 @@ jobs:
           fetch-depth: 0
       - name: Block auto-major (Go module path has no /v2 suffix)
         run: |
-          LAST_TAG=$(git tag --sort=-version:refname | grep -E ^v[0-9]+\.[0-9]+\.[0-9]+$ | head -1 || echo "")
+          LAST_TAG=$(git tag --sort=-version:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -1 || echo "")
           if [ -z "$LAST_TAG" ]; then
             echo "No tags yet, skipping"
             exit 0

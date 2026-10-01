@@ -1,4 +1,4 @@
-// Package main provides a minimal worker entry point for golang-worker-template.
+// Package main provides the listeners entry point for fast-listeners.
 // Replace the work function with your actual background job logic
 // (e.g., Kafka consumer, SQS polling, scheduled tasks, etc.).
 package main

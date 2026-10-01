@@ -29,9 +29,6 @@ jobs:
       app-client-id: ${{ vars.HELLNET_ACTIONS_CLIENT_ID }}
     secrets: inherit
 
-  # Single-import Go quality + security gate (see ci-templates/go-quality):
-  # module integrity, vet, race tests + coverage, canonical lint, build,
-  # dependency review on PRs.
   go-quality:
     uses: guilhermelinosp/templates/.github/workflows/go-quality.yml@df9f66533749a4a3a4b59c18a828a179800de096
     with:
