@@ -1,6 +1,6 @@
 # fast-listeners
 
-Serviço **listeners** da plataforma de corridas [fast-platform](https://github.com/guilhermelinosp/fast-platform): lê o outbox do PostgreSQL (acordado por `LISTEN/NOTIFY`, com reconciliação periódica) e publica os eventos no Kafka. O repositório é autocontido: inclui o runtime e os eventos que usa, copiados do [fast-platform](https://github.com/guilhermelinosp/fast-platform).
+Serviço **listeners** da plataforma de corridas [fast-platform](https://github.com/guilhermelinosp/fast-platform): lê o outbox do PostgreSQL (acordado por `LISTEN/NOTIFY`, com reconciliação periódica) e publica os eventos no Kafka. O runtime e os eventos de pedido vêm da biblioteca [fast-platform](https://github.com/guilhermelinosp/fast-platform) (`platform`, `env` e `events`).
 
 [![pipeline](https://github.com/guilhermelinosp/fast-listeners/actions/workflows/pipeline.yml/badge.svg)](https://github.com/guilhermelinosp/fast-listeners/actions/workflows/pipeline.yml)
 [![pr-check](https://github.com/guilhermelinosp/fast-listeners/actions/workflows/pr-check.yml/badge.svg)](https://github.com/guilhermelinosp/fast-listeners/actions/workflows/pr-check.yml)
@@ -45,9 +45,8 @@ O consumer de matching (`internal/matching`) escolhe um motorista disponível pa
 cmd/listeners          outbox -> Kafka (matching em standby)
 internal/listeners      outbox, NOTIFY e reconciliação
 internal/matching       escolha de motorista (standby)
-internal/platform      runtime compartilhado: bootstrap, erros, middleware e propagação de trace (cópia do fast-platform)
-internal/env           leitura de variáveis de ambiente (cópia do fast-platform)
-internal/orders        eventos de pedido publicados no Kafka (cópia do fast-platform)
+
+importa github.com/guilhermelinosp/fast-platform/{platform,env,events}  (runtime, variáveis de ambiente e eventos de pedido)
 ```
 
 ## Desenvolvimento
