@@ -25,7 +25,7 @@ cd cmd/listeners && go run -race main.go
 | `KAFKA_BROKERS`, `KAFKA_SECURITY_PROTOCOL` | Conexão Kafka |
 | `KAFKA_TOPIC_ORDER_REQUESTED`, `KAFKA_TOPIC_ORDER_ACCEPTED` | Tópicos dos eventos |
 | `KAFKA_MATCHING_CONSUMER_GROUP` | Grupo do consumer de matching (em standby) |
-| `HELLNET_CACHE_CONNECTION`, `HELLNET_CACHE_ENABLE_L2`, `HELLNET_CACHE_DEFAULT_TTL` | Cache L1 (memória) e L2 (Redis) |
+| `CACHE_CONNECTION`, `CACHE_ENABLE_L2`, `CACHE_DEFAULT_TTL` | Cache L1 (memória) e L2 (Redis) |
 
 Variáveis já definidas no ambiente têm prioridade sobre o `.env`. Faltando uma variável obrigatória, o processo falha com um erro claro.
 
