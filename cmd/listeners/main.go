@@ -1,89 +1,82 @@
-// Package main provides the listeners entry point for fast-listeners.
-// Replace the work function with your actual background job logic
-// (e.g., Kafka consumer, SQS polling, scheduled tasks, etc.).
 package main
 
 import (
 	"context"
-	"fmt"
-	"log"
 	"os"
-	"os/signal"
-	"syscall"
-	"time"
 
+	"github.com/guilhermelinosp/fast-listeners/internal/listeners"
+	"github.com/guilhermelinosp/fast-listeners/internal/orders"
+	"github.com/guilhermelinosp/fast-listeners/internal/platform"
+	"github.com/guilhermelinosp/hellnet-lib-cache/cache"
+	"github.com/guilhermelinosp/hellnet-lib-database/database"
+	"github.com/guilhermelinosp/hellnet-lib-kafka/kafka"
 	"github.com/guilhermelinosp/hellnet-lib-telemetry/telemetry"
 )
 
-// tel holds the observability instance. It is nil when main is not executed
-// (e.g. during unit tests), in which case jobs run without instrumentation.
-var tel *telemetry.Telemetry
-
 func main() {
-	t, err := telemetry.New()
+	if err := run(); err != nil {
+		platform.Fatal("fast-listeners", err)
+		os.Exit(1)
+	}
+}
+
+// run starts durable event publication and matching consumers. It does not
+// open an HTTP listener; cmd/api and cmd/sockets own network servers.
+func run() error {
+	ctx, stop, err := platform.Context()
 	if err != nil {
-		log.Fatalf("failed to init telemetry: %v", err)
+		return err
 	}
-	tel = t
-	defer func() { _ = tel.Shutdown() }()
+	defer stop()
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
-
-	done := make(chan struct{})
-	go func() {
-		defer close(done)
-		workerLoop(ctx)
-	}()
-
-	tel.Log().Info("worker started")
-
-	select {
-	case <-sig:
-		tel.Log().Info("shutdown signal received, stopping worker")
-		cancel()
-	case <-done:
-		tel.Log().Info("worker finished")
+	ops, err := telemetry.New(ctx)
+	if err != nil {
+		return err
 	}
+	defer func() { _ = ops.Close(ctx) }()
 
-	select {
-	case <-done:
-	case <-time.After(10 * time.Second):
-		tel.Log().Error("worker shutdown timed out")
+	db, err := database.New(ctx, ops)
+	if err != nil {
+		return err
 	}
-}
+	defer func() { _ = db.Close() }()
+	platform.Warmup(ctx, ops, "database", db.PingContext)
 
-func workerLoop(ctx context.Context) {
-	ticker := time.NewTicker(5 * time.Second)
-	defer ticker.Stop()
-
-	for {
-		select {
-		case <-ctx.Done():
-			if tel != nil {
-				tel.Log().Info("worker loop exiting")
-			}
-			return
-		case t := <-ticker.C:
-			runJob(ctx, t)
-		}
+	c, err := cache.New(ctx, ops)
+	if err != nil {
+		return err
 	}
-}
+	defer func() { _ = c.Close() }()
 
-// runJob executes one tick of work with observability (when tel is available).
-func runJob(ctx context.Context, t time.Time) {
-	do := func(c context.Context) error { return doWork(t) }
-	if tel != nil {
-		_ = tel.Worker("tick", do)
-		return
+	orderRequestedProducer, err := kafka.NewProducer[orders.OrderRequested](ctx, ops)
+	if err != nil {
+		return err
 	}
-	_ = do(ctx)
-}
+	defer func() { _ = orderRequestedProducer.Shutdown(context.WithoutCancel(ctx)) }()
+	platform.Warmup(ctx, ops, "kafka.order_requested", orderRequestedProducer.Ping)
+	orderAcceptedProducer, err := kafka.NewProducer[orders.OrderAccepted](ctx, ops)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = orderAcceptedProducer.Shutdown(context.WithoutCancel(ctx)) }()
+	platform.Warmup(ctx, ops, "kafka.order_accepted", orderAcceptedProducer.Ping)
 
-func doWork(t time.Time) error {
-	_, _ = fmt.Printf("tick at %s\n", t.Format(time.RFC3339))
+	producer := listeners.NewProducer(orderRequestedProducer, orderAcceptedProducer)
+	listener, err := listeners.NewListener(ctx, ops, db, producer)
+	if err != nil {
+		return err
+	}
+	defer listener.Close()
+
+	//matchingConsumer, err := matching.NewConsumer(ctx, ops, matching.NewService(matching.NewRepository(db), c))
+	//if err != nil {
+	//	return err
+	//}
+	//defer func() { _ = matchingConsumer.Close() }()
+
+	//go platform.Consume(ctx, ops, "matching", matchingConsumer.RunContext)
+
+	ops.Log(ctx).Info("fast-listeners started")
+	<-ctx.Done()
 	return nil
 }
