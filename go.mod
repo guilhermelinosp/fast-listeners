@@ -15,6 +15,7 @@ require (
 	github.com/felixge/httpsnoop v1.1.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.15 // indirect
 	github.com/gin-contrib/sse v1.1.2 // indirect
+	github.com/gin-gonic/gin v1.12.0 // indirect
 	github.com/go-logr/logr v1.4.4 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-playground/locales v0.14.2 // indirect
@@ -31,6 +32,7 @@ require (
 	github.com/jackc/pgx/v5 v5.11.0 // indirect
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/jmoiron/sqlx v1.4.0 // indirect
+	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.20.1 // indirect
 	github.com/klauspost/cpuid/v2 v2.4.0 // indirect
@@ -83,12 +85,11 @@ require (
 )
 
 require (
-	github.com/gin-gonic/gin v1.12.0
+	github.com/guilhermelinosp/fast-platform v1.10.7
 	github.com/guilhermelinosp/hellnet-lib-cache v1.5.2
 	github.com/guilhermelinosp/hellnet-lib-database v1.5.2
 	github.com/guilhermelinosp/hellnet-lib-kafka v1.11.1
 	github.com/guilhermelinosp/hellnet-lib-telemetry v1.14.2
-	github.com/joho/godotenv v1.5.1
 	go.opentelemetry.io/otel v1.46.0
 	go.opentelemetry.io/otel/sdk v1.46.0
 	go.opentelemetry.io/otel/trace v1.46.0
