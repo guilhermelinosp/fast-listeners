@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/guilhermelinosp/fast-listeners/internal/listeners"
+	"github.com/guilhermelinosp/fast-listeners/internal/producers"
 	"github.com/guilhermelinosp/fast-platform/events"
 	"github.com/guilhermelinosp/fast-platform/platform"
 	"github.com/guilhermelinosp/hellnet-lib-cache/cache"
@@ -61,7 +62,7 @@ func run() error {
 	defer func() { _ = orderAcceptedProducer.Shutdown(context.WithoutCancel(ctx)) }()
 	platform.Warmup(ctx, ops, "kafka.order_accepted", orderAcceptedProducer.Ping)
 
-	producer := listeners.NewProducer(orderRequestedProducer, orderAcceptedProducer)
+	producer := producers.NewProducer(orderRequestedProducer, orderAcceptedProducer)
 	listener, err := listeners.NewListener(ctx, ops, db, producer)
 	if err != nil {
 		return err
