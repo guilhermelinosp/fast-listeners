@@ -1,8 +1,6 @@
 # fast-listeners
 
-Serviço **listeners** da plataforma de corridas [fast-platform](https://github.com/guilhermelinosp/fast-platform): lê o outbox do PostgreSQL (acordado por `LISTEN/NOTIFY`, com reconciliação periódica) e publica os eventos no Kafka.
-
-> **Estado atual:** este repositório foi criado a partir do [hellnet-worker-template](https://github.com/guilhermelinosp/hellnet-worker-template) e contém o esqueleto do worker. A implementação em uso está em `cmd/listeners` do fast-platform.
+Serviço **listeners** da plataforma de corridas [fast-platform](https://github.com/guilhermelinosp/fast-platform): lê o outbox do PostgreSQL (acordado por `LISTEN/NOTIFY`, com reconciliação periódica) e publica os eventos no Kafka. O repositório é autocontido: inclui o runtime e os eventos que usa, copiados do [fast-platform](https://github.com/guilhermelinosp/fast-platform).
 
 [![pipeline](https://github.com/guilhermelinosp/fast-listeners/actions/workflows/pipeline.yml/badge.svg)](https://github.com/guilhermelinosp/fast-listeners/actions/workflows/pipeline.yml)
 [![pr-check](https://github.com/guilhermelinosp/fast-listeners/actions/workflows/pr-check.yml/badge.svg)](https://github.com/guilhermelinosp/fast-listeners/actions/workflows/pr-check.yml)
@@ -10,22 +8,26 @@ Serviço **listeners** da plataforma de corridas [fast-platform](https://github.
 
 ## Início rápido
 
-```bash
-go run ./cmd/listeners
-```
+O serviço lê o `.env` da própria pasta (`cmd/listeners/.env`, ignorado pelo git): copie o `cmd/listeners/.env.example` e ajuste. São necessários PostgreSQL, Redis e Kafka.
 
-Sem `HELLNET_TELEMETRY_ENDPOINT`, o worker roda e imprime um `tick` a cada 5 s.
+```bash
+cp cmd/listeners/.env.example cmd/listeners/.env
+cd cmd/listeners && go run -race main.go
+```
 
 ## Configuração
 
-| Variável | Descrição | Padrão |
-|---|---|---|
-| `HELLNET_TELEMETRY_ENDPOINT` | URL do collector OTLP/HTTP (sem ela, a telemetria não exporta) | *vazio* |
-| `HELLNET_TELEMETRY_SERVICE` | nome do serviço reportado pela telemetria | nome do módulo |
+| Variável | Descrição |
+|---|---|
+| `HELLNET_SERVICE`, `HELLNET_ENVIRONMENT` | Nome do serviço e ambiente |
+| `HELLNET_TELEMETRY_ENDPOINT` | Endpoint OTLP/HTTP (Alloy) |
+| `DATABASE_HOST`, `DATABASE_PORT`, `DATABASE_NAME`, `DATABASE_USERNAME`, `DATABASE_PASSWORD`, `DATABASE_POOL_MAX_SIZE` | Conexão PostgreSQL |
+| `KAFKA_BROKERS`, `KAFKA_SECURITY_PROTOCOL` | Conexão Kafka |
+| `KAFKA_TOPIC_ORDER_REQUESTED`, `KAFKA_TOPIC_ORDER_ACCEPTED` | Tópicos dos eventos |
+| `KAFKA_MATCHING_CONSUMER_GROUP` | Grupo do consumer de matching (em standby) |
+| `HELLNET_CACHE_CONNECTION`, `HELLNET_CACHE_ENABLE_L2`, `HELLNET_CACHE_DEFAULT_TTL` | Cache L1 (memória) e L2 (Redis) |
 
-Um `.env` ao lado do binário é carregado quando existe (`internal/env`); variáveis já definidas no ambiente têm prioridade.
-
-A implementação do fast-platform lê também `DATABASE_*`, `KAFKA_*` e `HELLNET_CACHE_*`: veja a tabela de configuração do fast-platform.
+Variáveis já definidas no ambiente têm prioridade sobre o `.env`. Faltando uma variável obrigatória, o processo falha com um erro claro.
 
 ## Arquitetura
 
@@ -33,14 +35,20 @@ A implementação do fast-platform lê também `DATABASE_*`, `KAFKA_*` e `HELLNE
 PostgreSQL ── NOTIFY outbox_events ──► fast-listeners ──► Kafka ──► fast-sockets
 ```
 
-Na plataforma, o `fast-listeners` é acordado por `LISTEN/NOTIFY` e publica no Kafka os eventos do outbox (`order.requested.v1` e `order.accepted.v1`); como rede de segurança, reconcilia a cada 5 s os eventos da última hora.
+Quem grava o pedido (a API do [fast-platform](https://github.com/guilhermelinosp/fast-platform)) insere o evento no outbox na mesma escrita atômica. O `fast-listeners` é acordado por `LISTEN/NOTIFY` e publica os eventos no Kafka; como rede de segurança, reconcilia a cada 5 s os eventos da última hora (e faz uma varredura completa na partida e de hora em hora). A publicação é registrada em uma linha nova, em `outbox_publications` (o banco é append-only).
+
+O consumer de matching (`internal/matching`) escolhe um motorista disponível para cada pedido. Está em **standby**: o bloco está comentado em `cmd/listeners/main.go`, e nada grava a disponibilidade dos motoristas ainda.
+
+## Estrutura
 
 ```text
-cmd/listeners/main.go   telemetria -> contexto com sinais -> loop do worker -> encerramento gracioso
-internal/env         leitura opcional de .env e helpers de variáveis de ambiente
+cmd/listeners          outbox -> Kafka (matching em standby)
+internal/listeners      outbox, NOTIFY e reconciliação
+internal/matching       escolha de motorista (standby)
+internal/platform      runtime compartilhado: bootstrap, erros, middleware e propagação de trace (cópia do fast-platform)
+internal/env           leitura de variáveis de ambiente (cópia do fast-platform)
+internal/orders        eventos de pedido publicados no Kafka (cópia do fast-platform)
 ```
-
-O `main.go` inicia a telemetria (`telemetry.New`), roda o `workerLoop` em uma goroutine (um ticker de 5 s que chama o `runJob`, instrumentado como span de worker `tick`) e, em `SIGINT`/`SIGTERM`, cancela o contexto e espera até 10 s o loop parar. Hoje `doWork` só imprime o horário: o trabalho real (outbox -> Kafka) é implementado em [fast-platform](https://github.com/guilhermelinosp/fast-platform) (`cmd/listeners`).
 
 ## Desenvolvimento
 
