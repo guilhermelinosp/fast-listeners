@@ -85,7 +85,7 @@ require (
 )
 
 require (
-	github.com/guilhermelinosp/fast-platform v1.10.7
+	github.com/guilhermelinosp/fast-platform v1.11.0
 	github.com/guilhermelinosp/hellnet-lib-cache v1.6.0
 	github.com/guilhermelinosp/hellnet-lib-database v1.5.2
 	github.com/guilhermelinosp/hellnet-lib-kafka v1.11.1
