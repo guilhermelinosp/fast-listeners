@@ -44,6 +44,7 @@ O consumer de matching (`internal/matching`) escolhe um motorista disponível pa
 ```text
 cmd/listeners          outbox -> Kafka (matching em standby)
 internal/listeners      outbox, NOTIFY e reconciliação
+internal/producers      producer Kafka que publica os eventos do outbox
 internal/matching       escolha de motorista (standby)
 
 importa github.com/guilhermelinosp/fast-platform/{platform,env,events}  (runtime, variáveis de ambiente e eventos de pedido)

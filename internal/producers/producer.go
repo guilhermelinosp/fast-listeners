@@ -1,9 +1,10 @@
-package listeners
+package producers
 
 import (
 	"context"
 	"encoding/json"
 
+	"github.com/guilhermelinosp/fast-listeners/internal/listeners"
 	"github.com/guilhermelinosp/fast-platform/events"
 	"github.com/guilhermelinosp/fast-platform/platform"
 	"github.com/guilhermelinosp/hellnet-lib-kafka/kafka"
@@ -24,7 +25,7 @@ func NewProducer(requested *kafka.Producer[events.OrderRequested], accepted *kaf
 }
 
 // Publish decodes and publishes a single outbox event to Kafka.
-func (p *Producer) Publish(ctx context.Context, event Event) error {
+func (p *Producer) Publish(ctx context.Context, event listeners.Event) error {
 	ctx = kafka.ContextWithHeaders(ctx, correlationHeaders(event))
 	switch event.EventType {
 	case (events.OrderRequested{}).MessageType():
@@ -46,7 +47,7 @@ func (p *Producer) Publish(ctx context.Context, event Event) error {
 
 // correlationHeaders are the Kafka record headers that correlate a message with
 // its outbox event and order; the trace context is added by the Kafka library.
-func correlationHeaders(event Event) map[string]string {
+func correlationHeaders(event listeners.Event) map[string]string {
 	return map[string]string{
 		"event_id":   event.ID,
 		"event_type": event.EventType,
