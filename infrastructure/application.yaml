@@ -29,7 +29,7 @@ spec:
         imagePullPolicy: IfNotPresent
         envFrom:
         - configMapRef:
-            name: fast-listeners
+            name: fast-listeners-config
         env:
         - name: HELLNET_SERVICE
           value: fast-listeners
