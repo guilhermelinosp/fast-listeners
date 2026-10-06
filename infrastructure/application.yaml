@@ -3,7 +3,6 @@ kind: Deployment
 metadata:
   name: fast-listeners
   labels: &id001
-    app.kubernetes.io/name: hellnet-service
     app.kubernetes.io/instance: fast-listeners
 spec:
   replicas: 1
