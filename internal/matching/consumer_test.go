@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/guilhermelinosp/fast-platform/events"
-	"github.com/guilhermelinosp/fast-platform/platform"
+	"github.com/guilhermelinosp/hellnet-lib-core/events"
+	"github.com/guilhermelinosp/hellnet-lib-core/platform"
 )
 
 type noopService struct{}

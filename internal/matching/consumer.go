@@ -4,9 +4,9 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/guilhermelinosp/fast-platform/env"
-	"github.com/guilhermelinosp/fast-platform/events"
-	"github.com/guilhermelinosp/fast-platform/platform"
+	"github.com/guilhermelinosp/hellnet-lib-core/env"
+	"github.com/guilhermelinosp/hellnet-lib-core/events"
+	"github.com/guilhermelinosp/hellnet-lib-core/platform"
 	"github.com/guilhermelinosp/hellnet-lib-kafka/kafka"
 	"github.com/guilhermelinosp/hellnet-lib-telemetry/telemetry"
 	"go.opentelemetry.io/otel/attribute"
