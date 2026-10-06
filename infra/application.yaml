@@ -1,19 +1,58 @@
-# Aplicar uma vez no cluster (kubectl apply -f). Depois o ArgoCD segue este repositorio.
-apiVersion: argoproj.io/v1alpha1
-kind: Application
+apiVersion: apps/v1
+kind: Deployment
 metadata:
   name: fast-listeners
-  namespace: argocd
+  labels: &id001
+    app.kubernetes.io/name: hellnet-service
+    app.kubernetes.io/instance: fast-listeners
 spec:
-  project: fast
-  source:
-    repoURL: https://github.com/guilhermelinosp/fast-listeners
-    targetRevision: main
-    path: infra
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: fast
-  syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
+  replicas: 1
+  revisionHistoryLimit: 10
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels: *id001
+  template:
+    metadata:
+      labels: *id001
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+      - name: fast-listeners
+        image: ghcr.io/guilhermelinosp/fast-listeners:v1.2.2
+        imagePullPolicy: IfNotPresent
+        envFrom:
+        - configMapRef:
+            name: fast-listeners-config
+        env:
+        - name: HELLNET_SERVICE
+          value: fast-listeners
+        - name: DATABASE_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: fast-database
+              key: DATABASE_USERNAME
+        - name: DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: fast-database
+              key: DATABASE_PASSWORD
+        resources:
+          requests:
+            cpu: 20m
+            memory: 48Mi
+          limits:
+            cpu: '1'
+            memory: 512Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
