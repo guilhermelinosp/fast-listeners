@@ -24,7 +24,7 @@ spec:
           type: RuntimeDefault
       containers:
       - name: fast-listeners
-        image: ghcr.io/guilhermelinosp/fast-listeners:v1.2.2
+        image: ghcr.io/guilhermelinosp/fast-listeners
         imagePullPolicy: IfNotPresent
         envFrom:
         - configMapRef:
