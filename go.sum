@@ -71,8 +71,8 @@ github.com/guilhermelinosp/hellnet-lib-cache v1.6.1 h1:+dU7PZZpdDgL/68Sv4UcKtfFX
 github.com/guilhermelinosp/hellnet-lib-cache v1.6.1/go.mod h1:WmDLrPxTQ+PIb6G/tShldLyM7mm2+X3g4MDGohz12yE=
 github.com/guilhermelinosp/hellnet-lib-core v1.2.0 h1:n+eSzAK2mt1FaymVytxndB2dU8JFlci7bfY5sNftoJo=
 github.com/guilhermelinosp/hellnet-lib-core v1.2.0/go.mod h1:yuWHEnLH+S17JCjMUfQuTcz5LzaLyjGEFZQdDsir/Co=
-github.com/guilhermelinosp/hellnet-lib-database v1.5.3 h1:MjklP1BROGhqanghMa+QwROaNxf7HCeAFTiInFh8AKk=
-github.com/guilhermelinosp/hellnet-lib-database v1.5.3/go.mod h1:vj4EXP6fDNnzwNUNZ4COP9F5l24VfSE24NUFIjPos68=
+github.com/guilhermelinosp/hellnet-lib-database v1.6.0 h1:HrL3Swi2t6Du1jRxChfBAWZ9MIE0QpZuJ8htDtkJ8IU=
+github.com/guilhermelinosp/hellnet-lib-database v1.6.0/go.mod h1:aK2s+rh3OKNMABeHc0vt+neR6UzZYzcSY3riegvNxb0=
 github.com/guilhermelinosp/hellnet-lib-kafka v1.12.0 h1:mNXf7Qv7QHWG1L83NFy0QVggLQ2lGugkapw73dSsjCY=
 github.com/guilhermelinosp/hellnet-lib-kafka v1.12.0/go.mod h1:AV2WkPMxpCJ0FYHqfftX1oRPALBT1/Pxh0Ht6AlT/bI=
 github.com/guilhermelinosp/hellnet-lib-telemetry v1.14.4 h1:HyhGeogXeCNNpz02+KG2lkWOPKCLN7yJzU3fUDlWPzY=
