@@ -29,6 +29,8 @@ spec:
         envFrom:
         - configMapRef:
             name: fast-listeners
+        - secretRef:
+            name: fast-kafka-listeners
         env:
         - name: HELLNET_SERVICE
           value: fast-listeners

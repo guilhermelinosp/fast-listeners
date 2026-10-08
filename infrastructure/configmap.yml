@@ -13,12 +13,13 @@ data:
   DATABASE_PORT: '5432'
   HELLNET_ENVIRONMENT: Development
   HELLNET_TELEMETRY_ENDPOINT: http://alloy.observability.svc.cluster.local:4318
-  KAFKA_BROKERS: redpanda.tools.svc.cluster.local:9093
+  KAFKA_BROKERS: redpanda.tools.svc.cluster.local:9094
   KAFKA_DEFAULT_SERIALIZER: avro
   KAFKA_MATCHING_CONSUMER_GROUP: fast-matching
+  KAFKA_SASL_MECHANISM: SCRAM-SHA-256
   KAFKA_SCHEMA_REGISTRY_PATH: none
   KAFKA_SCHEMA_REGISTRY_URL: http://redpanda.tools.svc.cluster.local:8081
   KAFKA_SCHEMA_SUBJECT_STRIP_PREFIX: br.com.hellnet.
-  KAFKA_SECURITY_PROTOCOL: plaintext
+  KAFKA_SECURITY_PROTOCOL: sasl_plaintext
   KAFKA_TOPIC_ORDER_ACCEPTED: br.com.hellnet.fast.order.accepted.v1
   KAFKA_TOPIC_ORDER_REQUESTED: br.com.hellnet.fast.order.requested.v1
